@@ -7,7 +7,7 @@ __global__ void vecMax_kernel(double* a, double* b, double* c, unsigned int M) {
 
     // TODO
     int i = blockDim.x*blockIdx.x + threadIdx.x;
-    if(i < N) {
+    if(i < M) {
         if(a[i] >= b[i])
             c[i] = a[i];
         else
@@ -38,7 +38,7 @@ void vecMax_gpu(double* a, double* b, double* c, unsigned int M) {
 
     // TODO
     cudaMemcpy(a_d, a, M*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(b_d, b, M*sizeof(double), cudaMemcpyHostToDevice)
+    cudaMemcpy(b_d, b, M*sizeof(double), cudaMemcpyHostToDevice);
 
 
     cudaDeviceSynchronize();
