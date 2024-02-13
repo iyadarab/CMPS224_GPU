@@ -58,9 +58,9 @@ void mm_gpu(float* A, float* B, float* C, unsigned int M, unsigned int N, unsign
     float * d_A;
     float * d_B;
     float * d_C;
-    cudaMalloc(d_A, M * K * sizeof(float));
-    cudaMalloc(d_B, K * N * sizeof(float));
-    cudaMalloc(d_C, M * N * sizeof(float));
+    cudaMalloc((void **) d_A, M * K * sizeof(float));
+    cudaMalloc((void **) d_B, K * N * sizeof(float));
+    cudaMalloc((void **) d_C, M * N * sizeof(float));
 
     cudaDeviceSynchronize();
     stopTime(&timer);
@@ -84,7 +84,7 @@ void mm_gpu(float* A, float* B, float* C, unsigned int M, unsigned int N, unsign
     // TODO
     dim3 block(32, 32);
     dim3 grid((N + block.x - 1) / block.x, (M + block.y - 1) / block.y);
-    mm_kernel<<<grid, block>>>(d_A, d_B, d_C, M, N, K);
+    mm_tiled_kernel<<<grid, block>>>(d_A, d_B, d_C, M, N, K);
 
 
     cudaDeviceSynchronize();
