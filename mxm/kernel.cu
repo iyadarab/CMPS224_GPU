@@ -26,6 +26,9 @@ void mm_gpu(float* A, float* B, float* C, unsigned int M, unsigned int N, unsign
     startTime(&timer);
 
     // TODO
+    float* d_A;
+    float* d_B;
+    float* d_C;
     cudaMalloc((void**)&d_A, M * K * sizeof(float));
     cudaMalloc((void**)&d_B, K * N * sizeof(float));
     cudaMalloc((void**)&d_C, M * N * sizeof(float));
