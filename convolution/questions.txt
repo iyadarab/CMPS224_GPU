@@ -1,0 +1,31 @@
+
+(1) The default parameters in this assignment perform a convolution on a
+    4096x4096 input using a 5x5 filter and a 32x32 input tile.
+
+    (a) What are the dimensions of the output tile?
+	Note in this 5x5 sqyare the filter_radius = 2.5 grounded to 2 in both the x and y dimentions.
+        input_tile-2*filter_radius=output_tile
+	The output tile is the input tile - the cells on the boundaries, which is input tile - 2 multiplied by input radius
+        32 - 2 *2 = 28 cells per axis
+        then The dimensions of the output tile are (28, 28)
+
+    (b) What is the total number of ghost cells for the entire input?
+	Since the entire input is 4096 x 4096. Then the gost cells or halo cells on the boundaries added around the input is (4096+2*2)^2 - 4096^2
+        = 32784 cells
+
+(2) Assume we used a rectangular 5x7 filter instead. The convolution is still
+    performed on a 4096x4096 input using a 32x32 input tile.
+
+    (a) What are the dimensions of the output tile?
+	Apply the same logic done in 1-a where we reoved the outer level of input cells as they aren't involved in the computation of the output tile, but with a rectangle 5x6\
+	Note in this rectangle that is 5x7 the filter_radius.x = 2.5 grounded to 2 and filter_radius.y will be 3.5 grounded to 3.
+		In the x dimension:
+        		input_tile.x-2*filter_radius.x=output_tile.x = 32-2*2 = 28 cells in width
+        	In the y dimention:
+        		input_tile.y-2*filter_radius.y=output_tile.y =32-2*3 =26 cells in length
+
+        Therefore, the dimentions of the output tile is (28,26)
+
+    (b) What is the total number of ghost cells for the entire input?
+	Since the entire input is 4096 x 4096. Then the gost cells or halo cells on the boundaries added around the input, and since we are dealing with a rectangular shape:
+     	(4096+2*2)*(4096+3*2)-4096^2 = 40984 ghost cells 
