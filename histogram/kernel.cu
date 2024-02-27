@@ -42,7 +42,7 @@ __global__ void histogram_private_coarse_kernel(unsigned char* image, unsigned i
     // TODO
     __shared__ unsigned int bins_s[NUM_BINS];
 
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
+    unsigned int i = blockDim.x * blockIdx.x * COARSE_FACTOR + threadIdx.x;
 
     if(threadIdx.x < NUM_BINS){
         bins_s[threadIdx.x] = 0;
@@ -70,6 +70,6 @@ void histogram_gpu_private_coarse(unsigned char* image_d, unsigned int* bins_d, 
 
     // TODO
     unsigned int numberofBlocks = ((width * height) + (THREADS_PER_BLOCK * COARSE_FACTOR -1) ) / (THREADS_PER_BLOCK * COARSE_FACTOR);
-    histogram_private_kernel <<< numberofBlocks, THREADS_PER_BLOCK>>> (image_d, bins_d, width, height);
+    histogram_private_coarse_kernel <<< numberofBlocks, THREADS_PER_BLOCK>>> (image_d, bins_d, width, height);
 }
 
