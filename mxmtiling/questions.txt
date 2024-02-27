@@ -5,14 +5,26 @@
 
     (a) The kernel implemented in the previous assignment (without shared memory
         tiling)
+	
+	Code :  int row = blockIdx.y * blockDim.y + threadIdx.y;
+    		int col = blockIdx.x * blockDim.x + threadIdx.x;
 
+    		if (row < M && col < N) {
+       		 float sum = 0.0f;
+        		for (int k = 0; k < K; k++) {
+            		sum += A[row * K + k] * B[k * N + col];
+        		}
+        		C[row * N + col] = sum;
+    		}
 
-
+	In the kernel I implemented, each thread is loading 2 values A[row * K + k] and B[k * N + col] which are a total of 8 bytes and doing 2 operations (multiplying them then adding it to the sum) 
+	=> Therefore, for each 8 bytes loaded we have 2 operations => 2/8 = 0.25 operations per load
 
 
     (b) The kernel implemented in this assignment (with shared memory tiling)
 
-
+	In my implementation, each thread is loading 8 bytes and waits for all threads in the block to finish loading. Then ewch thread is making 2 * Thread_DIM operations.
+	Thus the number of operations per load (considering Thread_DIM = 32) is 64 operations /8 bytes = 8 operations per bytes loaded
 
 
 
@@ -29,21 +41,26 @@
     Answer the following questions about occupancy for the kernel implemented
     in this assignment. Show your work.
 
+	wHAT THE KERNEL RETURNED WHEN RUNNING ptxas:
+		ptxas info    : 0 bytes gmem
+		ptxas info    : Compiling entry function '_Z15mm_tiled_kernelPfS_S_jjj' for 'sm_52'
+		ptxas info    : Function properties for _Z15mm_tiled_kernelPfS_S_jjj
+    		0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+		ptxas info    : Used 32 registers, 8192 bytes smem, 356 bytes cmem[0]
+
+
     (a) Is occupancy limited by the max blocks/SM?
 
-
-
-
+	No, the occupancy is not limited by the max blocks/SM because the kernel reports using only 32 registers and 8192 bytes of shared memory per block, which are well within the resource constraints of the GPU. The number of blocks per SM is determined by the amount of resources each block consumes, but in this case, the resource consumption is not reaching the limits set by the hardware.
 
     (b) Is occupancy limited by the max shared-memory/SM?
 
-
-
+	Yes, the occupancy is limited by the max shared-memory/SM. The kernel is using 8192 bytes of shared memory per block, and the Tesla V100 GPU has a maximum of 96KB of shared memory per SM. With each block consuming 8192 bytes, you can fit a maximum of 11 blocks per SM (11 * 8192 = 90112 bytes), which is within the limit of 32 max blocks/SM
 
 
     (c) Is occupancy limited by the max registers/SM?
-
-
+	
+	No, the occupancy is not limited by the max registers/SM because the kernel reports using only 32 registers per block, which is well within the limit of 64K max registers/SM. The register usage is relatively low, indicating that the kernel is not using an excessive amount of registers per thread, allowing more threads to be accommodated per SM.cal
 
 
 

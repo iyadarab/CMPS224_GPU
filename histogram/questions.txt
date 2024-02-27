@@ -1,0 +1,23 @@
+
+The kernels in this assignment with the default parameters set perform a
+histogram operation on an image with dimensions 4096x4096 to produce a
+histogram with 256 bins. Assume the kernels are configured with 1024 threads
+per block. What is the maximum number of atomic operations that may be
+performed on global memory for each of the following kernels?
+
+(1) The unoptimized kernel with no privatization in shared memory or thread
+    coarsening.
+
+    
+
+(2) The kernel with privatization in shared memory but without thread
+    coarsening.
+
+    
+
+(3) The kernel with both privatization in shared memory and thread coarsening
+    with a coarsening factor of 64.
+
+    
+
+

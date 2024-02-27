@@ -11,16 +11,16 @@ __global__ void mm_tiled_kernel(float* A, float* B, float* C, unsigned int M, un
     __shared__ float A_s[TILE_DIM][TILE_DIM];
     __shared__ float B_s[TILE_DIM][TILE_DIM];
 
-    unsigned int row = blockIdx.y*blockDim.y + threadIdx.y;
-    unsigned int col = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned int row = blockIdx.y*TILE_DIM + threadIdx.y;
+    unsigned int col = blockIdx.x*TILE_DIM + threadIdx.x;
 
     float sum = 0.0f;
 
-    for(unsigned int tile = 0; tile < N/TILE_DIM; ++tile) {
+    for(unsigned int tile = 0; tile < (K + TILE_DIM -1) / TILE_DIM; ++tile) {
         // Load tile to shared memory and Adding boundary conditions inorder not to access invalid memory addresses
         unsigned int col_A = (tile * TILE_DIM) + threadIdx.x;
 
-        if(row < N && col_A < K){
+        if(row < M && col_A < K){
             A_s[threadIdx.y][threadIdx.x] = A[row*N + tile*TILE_DIM + threadIdx.x];
         } else {
             A_s[threadIdx.y][threadIdx.x] = 0.0f;
@@ -28,7 +28,7 @@ __global__ void mm_tiled_kernel(float* A, float* B, float* C, unsigned int M, un
         
         unsigned int row_B = (tile * TILE_DIM) + threadIdx.y;
 
-        if(col < K && row_B < N){
+        if(col < N && row_B < K){
             B_s[threadIdx.y][threadIdx.x] = B[(tile*TILE_DIM + threadIdx.y)*N + col];
         } else {
             B_s[threadIdx.y][threadIdx.x] = 0.0f;
@@ -43,8 +43,9 @@ __global__ void mm_tiled_kernel(float* A, float* B, float* C, unsigned int M, un
 
         __syncthreads();
     }
-    
-    C[row*N + col] = sum;
+    if(col < N && rom < M){
+        C[(blockIdx.y*blockDim.y+threadIdx.y)*N + (blockIdx.x*blockDim.x+threadIdx.x)] = sum;
+    }
 }
 
 void mm_gpu(float* A, float* B, float* C, unsigned int M, unsigned int N, unsigned int K) {
@@ -58,9 +59,9 @@ void mm_gpu(float* A, float* B, float* C, unsigned int M, unsigned int N, unsign
     float * d_A;
     float * d_B;
     float * d_C;
-    cudaMalloc((void **) d_A, M * K * sizeof(float));
-    cudaMalloc((void **) d_B, K * N * sizeof(float));
-    cudaMalloc((void **) d_C, M * N * sizeof(float));
+    cudaMalloc((void **) &d_A, M * K * sizeof(float));
+    cudaMalloc((void **) &d_B, K * N * sizeof(float));
+    cudaMalloc((void **) &d_C, M * N * sizeof(float));
 
     cudaDeviceSynchronize();
     stopTime(&timer);
@@ -70,8 +71,8 @@ void mm_gpu(float* A, float* B, float* C, unsigned int M, unsigned int N, unsign
     startTime(&timer);
 
     // TODO
-    cudaMemcpy(d_A, M * K * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, K * N * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_A, A, M * K * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, B, K * N * sizeof(float), cudaMemcpyHostToDevice);
 
 
     cudaDeviceSynchronize();
@@ -95,7 +96,7 @@ void mm_gpu(float* A, float* B, float* C, unsigned int M, unsigned int N, unsign
     startTime(&timer);
 
     // TODO
-    cudaMemcpy(d_C, M * N * sizeof(float));
+    cudaMemcpy(C, d_C,  M * N * sizeof(float));
 
 
     cudaDeviceSynchronize();
